@@ -56,17 +56,20 @@ function saveBase64Image(base64String, folder = 'uploads') {
 app.put('/users/:username', async (req, res) => {
     try {
         const { username } = req.params;
-        const { name, bio, gender, image } = req.body;
+        const { name, bio, gender, profileImage, themeImage } = req.body;
         if (!name || !image) {
             return res.status(400).json({ error: 'name and image are required.' });
         }
-        let imagePath;
+        let profileImagePath;
+        let themeImagePath;
         try {
-            imagePath = saveBase64Image(image);
+            profileImagePath = saveBase64Image(profileImage);
+            themeImagePath = saveBase64Image(themeImage);
         } catch (err) {
             return res.status(400).json({ error: 'Invalid base64 image' });
         }
         console.log("ImagePath", imagePath);
+        console.log("ThemeImagePath", themeImagePath);
         const result = await db.collection('users').updateOne(
             { username },
             {
@@ -74,7 +77,84 @@ app.put('/users/:username', async (req, res) => {
                     name,
                     bio,
                     gender,
-                    image: imagePath
+                    profileImage: profileImagePath,
+                    themeImage: themeImagePath
+                }
+            }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        return res.status(200).json({ message: 'Profile updated successfully' });
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+app.put('/personalInfo/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { mobile, email, dob, hide } = req.body;
+        if (!mobile || !email || !dob || !hide) {
+            return res.status(400).json({ error: 'Mobile, Email and DOB are required.' });
+        }
+        const result = await db.collection('users').updateOne(
+            { username },
+            {
+                $set: {
+                    mobile,
+                    email,
+                    dob,
+                    hide
+                }
+            }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        return res.status(200).json({ message: 'Profile updated successfully' });
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+app.put('/interestsHashtags/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { interests, hashtags } = req.body;
+        if (!interests || !hashtags) {
+            return res.status(400).json({ error: 'interests and hashtags are required.' });
+        }
+        const result = await db.collection('users').updateOne(
+            { username },
+            {
+                $set: {
+                    interests,
+                    hashtags
+                }
+            }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        return res.status(200).json({ message: 'Profile updated successfully' });
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+app.put('/socialHandles/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { socialHandles } = req.body;
+        if (!socialHandles) {
+            return res.status(400).json({ error: 'socialHandles are required.' });
+        }
+        const result = await db.collection('users').updateOne(
+            { username },
+            {
+                $set: {
+                    socialHandles
                 }
             }
         );
