@@ -56,7 +56,7 @@ function saveBase64Image(base64String, folder = 'uploads') {
 app.put('/users/:username', async (req, res) => {
     try {
         const { username } = req.params;
-        const { name, bio, gender, profileImage, themeImage } = req.body;
+        const { name, bio, profileImage, themeImage } = req.body;
         if (!name || !image) {
             return res.status(400).json({ error: 'name and image are required.' });
         }
@@ -76,7 +76,6 @@ app.put('/users/:username', async (req, res) => {
                 $set: {
                     name,
                     bio,
-                    gender,
                     profileImage: profileImagePath,
                     themeImage: themeImagePath
                 }
@@ -94,9 +93,9 @@ app.put('/users/:username', async (req, res) => {
 app.put('/personalInfo/:username', async (req, res) => {
     try {
         const { username } = req.params;
-        const { mobile, email, dob, hide } = req.body;
+        const { mobile, email, dob, gender, hide } = req.body;
         if (!mobile || !email || !dob || !hide) {
-            return res.status(400).json({ error: 'Mobile, Email and DOB are required.' });
+            return res.status(400).json({ error: 'Mobile, Email,gender and DOB are required.' });
         }
         const result = await db.collection('users').updateOne(
             { username },
@@ -104,6 +103,7 @@ app.put('/personalInfo/:username', async (req, res) => {
                 $set: {
                     mobile,
                     email,
+                    gender,
                     dob,
                     hide
                 }
