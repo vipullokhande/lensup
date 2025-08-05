@@ -76,6 +76,7 @@ app.put('/users/:username', async (req, res) => {
                 $set: {
                     name,
                     bio,
+                    username,
                     profileImage: profileImagePath,
                     themeImage: themeImagePath
                 }
