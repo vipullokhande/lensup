@@ -57,7 +57,7 @@ app.put('/users/:username', async (req, res) => {
     try {
         const { username } = req.params;
         const { name, bio, profileImage, themeImage } = req.body;
-        if (!name || !image) {
+        if (!name || !profileImage || !themeImage) {
             return res.status(400).json({ error: 'name and image are required.' });
         }
         let profileImagePath;
@@ -68,8 +68,6 @@ app.put('/users/:username', async (req, res) => {
         } catch (err) {
             return res.status(400).json({ error: 'Invalid base64 image' });
         }
-        console.log("ImagePath", imagePath);
-        console.log("ThemeImagePath", themeImagePath);
         const result = await db.collection('users').updateOne(
             { username },
             {
