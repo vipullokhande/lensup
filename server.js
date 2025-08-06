@@ -75,9 +75,9 @@ app.put('/users/:username', upload.fields([
 ]), async (req, res) => {
     try {
         const { username } = req.params;
-        const { name, bio } = req.body;
+        const { name, bio ,usernamee} = req.body;
 
-        if (!name || !req.files.profileImage || !req.files.themeImage) {
+        if (!usernamee||!name || !req.files.profileImage || !req.files.themeImage) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -90,7 +90,7 @@ app.put('/users/:username', upload.fields([
                 $set: {
                     name,
                     bio,
-                    username,
+                    username:usernamee,
                     profileImage: profileImagePath,
                     themeImage: themeImagePath
                 }
