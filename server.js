@@ -163,15 +163,16 @@ app.put('/interestsHashtags/:username', async (req, res) => {
 app.put('/socialHandles/:username', async (req, res) => {
     try {
         const { username } = req.params;
-        const { socialHandles } = req.body;
-        if (!socialHandles) {
+        const { socialHandles ,hideSocial} = req.body;
+        if (!socialHandles || !hideSocial) {
             return res.status(400).json({ error: 'socialHandles are required.' });
         }
         const result = await db.collection('users').updateOne(
             { username },
             {
                 $set: {
-                    socialHandles
+                    socialHandles,
+                    hideSocial
                 }
             }
         );
