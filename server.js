@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
+const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -52,22 +53,37 @@ function saveBase64Image(base64String, folder = 'uploads') {
 
     return filepath;
 }
-//Edit profile API
-app.put('/users/:username', async (req, res) => {
+
+// Create upload destination
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath);
+        }
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        cb(null, Date.now() + ext);
+    }
+});
+const upload = multer({ storage });
+app.put('/users/:username', upload.fields([
+    { name: 'profileImage', maxCount: 1 },
+    { name: 'themeImage', maxCount: 1 }
+]), async (req, res) => {
     try {
         const { username } = req.params;
-        const { name, bio, profileImage, themeImage } = req.body;
-        if (!name || !profileImage || !themeImage) {
-            return res.status(400).json({ error: 'name and image are required.' });
+        const { name, bio } = req.body;
+
+        if (!name || !req.files.profileImage || !req.files.themeImage) {
+            return res.status(400).json({ error: 'Missing required fields' });
         }
-        let profileImagePath;
-        let themeImagePath;
-        try {
-            profileImagePath = saveBase64Image(profileImage);
-            themeImagePath = saveBase64Image(themeImage);
-        } catch (err) {
-            return res.status(400).json({ error: 'Invalid base64 image' });
-        }
+
+        const profileImagePath = `/uploads/${req.files.profileImage[0].filename}`;
+        const themeImagePath = `/uploads/${req.files.themeImage[0].filename}`;
+
         const result = await db.collection('users').updateOne(
             { username },
             {
@@ -80,10 +96,12 @@ app.put('/users/:username', async (req, res) => {
                 }
             }
         );
+
         if (result.matchedCount === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
-        return res.status(200).json({ message: 'Profile updated successfully' });
+
+        res.status(200).json({ message: 'Profile updated successfully' });
     } catch (err) {
         console.error('Error:', err);
         res.status(500).json({ error: 'Internal Server Error' });
